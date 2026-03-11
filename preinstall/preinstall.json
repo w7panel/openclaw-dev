@@ -1,0 +1,85 @@
+{
+    "dockerfile": [],
+    "environment": [
+        {
+            "name": "golang",
+            "version": "1.24.0",
+            "url": "https://mirrors.aliyun.com/golang/go1.24.0.linux-amd64.tar.gz",
+            "install": "mkdir -p /opt/tools/bin /opt/tools/go && wget -q $URL -O /tmp/go.tar.gz && tar -C /opt/tools -xzf /tmp/go.tar.gz && rm /tmp/go.tar.gz"
+        },
+        {
+            "name": "node",
+            "version": "22.14.0",
+            "url": "https://registry.npmmirror.com/-/binary/node/v22.14.0/node-v22.14.0-linux-x64.tar.xz",
+            "install": "mkdir -p /opt/tools/bin && wget -q $URL -O /tmp/node.tar.xz && tar -C /opt/tools -xJf /tmp/node.tar.xz --strip-components=1 && rm /tmp/node.tar.xz && npm config set registry https://registry.npmmirror.com"
+        },
+        {
+            "name": "kubectl",
+            "version": "1.31.0",
+            "url": "https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl",
+            "install": "wget -q $URL -O /opt/tools/bin/kubectl && chmod +x /opt/tools/bin/kubectl"
+        },
+        {
+            "name": "helm",
+            "version": "3.17.2",
+            "url": "https://mirrors.huaweicloud.com/helm/v3.17.2/helm-v3.17.2-linux-amd64.tar.gz",
+            "install": "wget -q $URL -O /tmp/helm.tar.gz && tar -C /tmp -xzf /tmp/helm.tar.gz linux-amd64/helm && mv /tmp/linux-amd64/helm /opt/tools/bin/helm && rm -rf /tmp/helm.tar.gz /tmp/linux-amd64"
+        },
+        {
+            "name": "openclaw",
+            "version": "latest",
+            "url": "https://openclaw.ai/install.sh",
+            "install": "curl -fsSL $URL | bash"
+        },
+        {
+            "name": "agent-browser",
+            "version": "latest",
+            "url": "https://www.npmjs.com/package/agent-browser",
+            "install": "npm install --production -g agent-browser"
+        },
+        {
+            "name": "pnpm",
+            "version": "latest",
+            "url": "https://www.npmjs.com/package/pnpm",
+            "install": "npm install -g pnpm"
+        },
+        {
+            "name": "clawhub",
+            "version": "latest",
+            "url": "https://www.npmjs.com/package/clawhub",
+            "install": "npm install -g clawhub"
+        }
+    ],
+    "openclaw": [
+        {
+            "name": "superpowers-openclaw",
+            "url": "https://gh-proxy.com/https://github.com/maloqab/superpowers-openclaw",
+            "install": "git clone --depth 1 $URL /tmp/superpowers-openclaw && cd /tmp/superpowers-openclaw && ./install.sh && rm -rf /tmp/superpowers-openclaw"
+        },
+        {
+            "name": "skill-active-maintenance",
+            "url": "N/A",
+            "install": "openclaw install openclaw/skills/xiaowenzhou/active-maintenance || true"
+        },
+        {
+            "name": "skill-agent-audit",
+            "url": "N/A",
+            "install": "openclaw install openclaw/skills/sharbelayy/agent-audit || true"
+        },
+        {
+            "name": "skill-skillguard-audit",
+            "url": "N/A",
+            "install": "openclaw install openclaw/skills/jonathanliu811026/skillguard-audit || true"
+        },
+        {
+            "name": "skill-memory-lite",
+            "url": "N/A",
+            "install": "openclaw install openclaw/skills/vellis59/memory-lite || true"
+        },
+        {
+            "name": "skill-openclaw-mem",
+            "url": "N/A",
+            "install": "openclaw install openclaw/skills/WeAreAllSatoshiN/openclaw-mem || true"
+        }
+    ]
+}
