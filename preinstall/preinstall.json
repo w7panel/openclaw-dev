@@ -52,11 +52,6 @@
     ],
     "openclaw": [
         {
-            "name": "superpowers-openclaw",
-            "url": "https://gh-proxy.com/https://github.com/maloqab/superpowers-openclaw",
-            "install": "mkdir -p ~/.openclaw && git clone --depth 1 $URL /tmp/superpowers-openclaw && cd /tmp/superpowers-openclaw && ./install.sh && rm -rf /tmp/superpowers-openclaw"
-        },
-        {
             "name": "skill-active-maintenance",
             "url": "N/A",
             "install": "clawhub install openclaw/skills/xiaowenzhou/active-maintenance || true"
