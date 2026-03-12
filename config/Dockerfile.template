@@ -4,7 +4,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/home \
     PATH=/opt/tools/bin:/opt/tools/go/bin:/root/.local/bin:$PATH \
     GOPATH=/home/go \
-    GOROOT=/opt/tools/go
+    GOROOT=/opt/tools/go \
+    HTTP_PROXY=http://clash-vicwgrdz.default.svc.cluster.local:7890 \
+    HTTPS_PROXY=http://clash-vicwgrdz.default.svc.cluster.local:7890 \
+    NO_PROXY=localhost,127.0.0.1,.svc.cluster.local,.local
 
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 
