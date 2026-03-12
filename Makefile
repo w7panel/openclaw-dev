@@ -10,6 +10,14 @@ IMAGE := $(shell grep '^image:' config.yaml 2>/dev/null | awk '{print $$2}')
 REGISTRIES_CONF := config/registries.conf
 DOCKERFILE_TEMPLATE := config/Dockerfile.template
 
+# Git 代理配置（从 gitconfig.yaml 读取）
+GIT_PROXY := $(shell grep '^proxy:' gitconfig.yaml 2>/dev/null | awk '{print $$2}' | sed 's/^http:\/\///' | sed 's/\/$$//')
+ifeq ($(GIT_PROXY),)
+    BUILD_ENV :=
+else
+    BUILD_ENV := HTTP_PROXY=http://$(GIT_PROXY) HTTPS_PROXY=http://$(GIT_PROXY)
+endif
+
 .PHONY: all
 all: help
 
@@ -67,9 +75,10 @@ prepare-dockefile: check-config check-preinstall check-registries copy-skills
 build: check-config prepare-dockefile
 	@echo "=== Build Image (Local) ==="
 	@echo "Image: $(IMAGE)"
-	@(which buildah >/dev/null 2>&1 || (echo "Error: buildah not installed" && exit 1))
+	@(which buildah >/dev/null 2>&1 || (echo "Error: buildah not installed" || exit 1))
 	@buildah login --username $(REGISTRY_USER) --password $(REGISTRY_PASS) $(REGISTRY) 2>/dev/null || true
-	@buildah bud --squash -f Dockerfile -t $(IMAGE) --pull .
+	@echo "Build env: $(BUILD_ENV)"
+	@$(BUILD_ENV) buildah bud --squash -f Dockerfile -t $(IMAGE) --pull .
 	@buildah push $(IMAGE)
 	@echo ""
 	@echo "========================================"

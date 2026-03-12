@@ -54,15 +54,14 @@ make run
 ### 首次启动
 
 ```bash
-# 运行容器
-make run
-
-# 在容器内启动 Gateway
-openclaw gateway --port 18789
+# 运行容器（必须设置 OPENCLAW_GATEWAY_TOKEN）
+docker run -e OPENCLAW_GATEWAY_TOKEN=your_token_here -p 18789:18789 zpk.idc.w7.com/w7panel/openclaw-dev:latest
 
 # 或使用预置配置启动
 /entrypoint.sh
 ```
+
+> **注意**：必须设置 `OPENCLAW_GATEWAY_TOKEN` 环境变量，未设置时容器会报错退出。
 
 ### 常用命令
 
@@ -158,20 +157,26 @@ cp -r /path/to/my-skill preinstall/.openclaw/skills/
 
 1. 复制预装文件到 `/home/`
 2. 创建必要目录 (`/home/go`, `~/.openclaw`)
-3. 配置 Gateway（LAN 模式 + origin fallback）
-4. 启动 OpenClaw Gateway
+3. 检查 `OPENCLAW_GATEWAY_TOKEN` 环境变量（未设置则报错）
+4. 配置 Gateway（LAN 模式 + token 认证 + Control UI 安全选项）
+5. 启动 OpenClaw Gateway
 
 ## 环境变量
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| PORT | 18789 | Gateway 端口 |
-| APP | openclaw | 应用名称 |
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| OPENCLAW_GATEWAY_TOKEN | 是 | Gateway 认证 Token |
+| PORT | 否 | Gateway 端口 (默认 18789) |
+| APP | 否 | 应用名称 (默认 openclaw) |
 
 ## 持久化存储
 
 `/home` 目录为工作目录，建议挂载宿主机目录进行持久化：
 
 ```bash
-docker run -v /path/to/home:/home -p 18789:18789 zpk.idc.w7.com/w7panel/openclaw-dev:latest
+docker run \
+  -e OPENCLAW_GATEWAY_TOKEN=your_token_here \
+  -v /path/to/home:/home \
+  -p 18789:18789 \
+  zpk.idc.w7.com/w7panel/openclaw-dev:latest
 ```

@@ -1,6 +1,6 @@
 # OpenClaw Dev Environment
 
-开发环境容器镜像，支持 Go、Node.js、kubectl、helm、xray、gh、openclaw、agent-browser。
+开发环境容器镜像，支持 Go、Node.js、kubectl、helm、openclaw、agent-browser。
 
 ## 交流规则
 
@@ -31,6 +31,14 @@
 ## 预装内容
 
 预装内容分为两部分：
+
+### 构建时代理配置
+
+代理配置从 `gitconfig.yaml` 读取，用于构建时访问 GitHub：
+- 有配置 `proxy` 字段时：构建时使用代理
+- 无配置时：构建不使用代理
+
+代理配置**不会**写入镜像，仅在构建时临时使用。
 
 ### 1. 构建时安装（preinstall.json）
 
