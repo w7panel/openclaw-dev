@@ -5,23 +5,63 @@ OpenClaw Dev Environment 是一个基于 Debian Bookworm 的容器化开发环�
 ## 快速开始
 
 ```bash
-make build    # 构建镜像（使用本地 buildah）
+# 构建镜像
+make build
+
+# 运行测试容器
+make run
 ```
+
+## 预装内容
+
+### 基础环境
+
+| 工具 | 版本 | 说明 |
+|------|------|------|
+| Go | 1.24.0 | Go 编程语言 |
+| Node.js | 22.14.0 | JavaScript 运行时 |
+| kubectl | 1.31.0 | Kubernetes CLI |
+| helm | 3.17.2 | Kubernetes 包管理器 |
+| pnpm | latest | Node.js 包管理器 |
+
+### OpenClaw 生态
+
+| 工具 | 说明 |
+|------|------|
+| OpenClaw | AI 助手核心 |
+| agent-browser | 浏览器自动化工具 |
+| @wenyan-cli | 微信公众号 Markdown 工具 |
+
+### OpenClaw Skills
+
+预装 Skills 位于 `preinstall/.openclaw/skills/`：
+
+| Skill | 说明 |
+|-------|------|
+| docker-build | 使用 Buildah 构建 Docker/OCI 镜像 |
+| dockerfile-creator | 创建高效、安全的 Dockerfile |
+| makefile-creator | 创建高效、可维护的 Makefile |
+| skill-creator | 创建和验证 OpenClaw Skills |
+
+### 运行时安装的 Skills
+
+| Skill | 来源 |
+|-------|------|
+| wechat-publisher | GitHub (0731coderlee-sudo) |
 
 ## OpenClaw 使用说明
 
 ### 首次启动
 
 ```bash
-# 1. 进入容器（需手动运行容器）
-docker run -it --rm -p 18789:18789 zpk.idc.w7.com/w7panel/openclaw-dev:latest /bin/bash
+# 运行容器
+make run
 
-# 2. 在容器内启动 Gateway
+# 在容器内启动 Gateway
 openclaw gateway --port 18789
 
-# 3. 打开 Control UI
-openclaw dashboard
-# 或访问 http://127.0.0.1:18789
+# 或使用预置配置启动
+/entrypoint.sh
 ```
 
 ### 常用命令
@@ -47,19 +87,18 @@ openclaw dashboard
 
 ## 构建说明
 
-本项目使用本地 buildah 构建镜像：
-
 ```bash
 # 构建并推送镜像
 make build
+
+# 运行测试容器
+make run
 
 # 查看帮助
 make help
 ```
 
-## 配置文件
-
-### config.yaml（必需）
+### 构建配置 (config.yaml)
 
 ```yaml
 registry: <你的镜像仓库>
@@ -68,7 +107,7 @@ registry_pass: <密码>
 image: <完整镜像地址>
 ```
 
-### config/registries.conf
+### 镜像源配置 (config/registries.conf)
 
 Buildah 镜像源配置，支持国内镜像加速。
 
@@ -85,28 +124,42 @@ openclaw-dev/
 │   └── registries.conf      # Buildah 镜像源配置
 ├── preinstall/
 │   ├── preinstall.json   # 预装清单
-│   └── .openclaw/        # OpenClaw 配置和 Skills
+│   └── .openclaw/       # OpenClaw 配置和 Skills
 │       └── skills/       # 预装的 Skills
 └── scripts/
     └── entrypoint.sh     # 启动脚本
 ```
 
-## 预装配置
+## 添加自定义 Skills
 
-预装内容通过 `preinstall/preinstall.json` 管理：
+### 方式一：修改 preinstall.json
 
-- **dockerfile**：补充 Dockerfile 命令（如 COPY --from）
-- **environment**：基础环境工具（Go、Node.js、kubectl 等）
-- **openclaw**：OpenClaw 生态项目（Skills）
+在 `preinstall/openclaw` 数组中添加：
 
-### 添加自定义 Skills
+```json
+{
+  "name": "my-skill",
+  "url": "N/A",
+  "install": "git clone https://github.com/xxx/my-skill.git ~/.openclaw/skills/my-skill"
+}
+```
+
+### 方式二：添加 skills 目录
 
 将 skills 文件夹复制到 `preinstall/.openclaw/skills/`，构建时会自动打包：
 
 ```bash
-# 示例：添加自定义 skill
 cp -r /path/to/my-skill preinstall/.openclaw/skills/
 ```
+
+## 启动脚本
+
+`scripts/entrypoint.sh` 会自动：
+
+1. 复制预装文件到 `/home/`
+2. 创建必要目录 (`/home/go`, `~/.openclaw`)
+3. 配置 Gateway（LAN 模式 + origin fallback）
+4. 启动 OpenClaw Gateway
 
 ## 环境变量
 
@@ -117,8 +170,8 @@ cp -r /path/to/my-skill preinstall/.openclaw/skills/
 
 ## 持久化存储
 
-`/home` 目录为工作目录，建议挂载 PVC 或宿主机目录进行持久化：
+`/home` 目录为工作目录，建议挂载宿主机目录进行持久化：
 
 ```bash
-docker run -v /path/to/home:/home ...
+docker run -v /path/to/home:/home -p 18789:18789 zpk.idc.w7.com/w7panel/openclaw-dev:latest
 ```
