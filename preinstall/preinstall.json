@@ -29,7 +29,7 @@
             "name": "openclaw",
             "version": "latest",
             "url": "https://openclaw.ai/install.sh",
-            "install": "curl -fsSL $URL | bash"
+            "install": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 CI=true curl -fsSL $URL | bash -s -- --no-onboard"
         },
         {
             "name": "agent-browser",
@@ -54,32 +54,32 @@
         {
             "name": "superpowers-openclaw",
             "url": "https://gh-proxy.com/https://github.com/maloqab/superpowers-openclaw",
-            "install": "git clone --depth 1 $URL /tmp/superpowers-openclaw && cd /tmp/superpowers-openclaw && ./install.sh && rm -rf /tmp/superpowers-openclaw"
+            "install": "mkdir -p ~/.openclaw && git clone --depth 1 $URL /tmp/superpowers-openclaw && cd /tmp/superpowers-openclaw && ./install.sh && rm -rf /tmp/superpowers-openclaw"
         },
         {
             "name": "skill-active-maintenance",
             "url": "N/A",
-            "install": "openclaw install openclaw/skills/xiaowenzhou/active-maintenance || true"
+            "install": "clawhub install openclaw/skills/xiaowenzhou/active-maintenance || true"
         },
         {
             "name": "skill-agent-audit",
             "url": "N/A",
-            "install": "openclaw install openclaw/skills/sharbelayy/agent-audit || true"
+            "install": "clawhub install openclaw/skills/sharbelayy/agent-audit || true"
         },
         {
             "name": "skill-skillguard-audit",
             "url": "N/A",
-            "install": "openclaw install openclaw/skills/jonathanliu811026/skillguard-audit || true"
+            "install": "clawhub install openclaw/skills/jonathanliu811026/skillguard-audit || true"
         },
         {
             "name": "skill-memory-lite",
             "url": "N/A",
-            "install": "openclaw install openclaw/skills/vellis59/memory-lite || true"
+            "install": "clawhub install openclaw/skills/vellis59/memory-lite || true"
         },
         {
             "name": "skill-openclaw-mem",
             "url": "N/A",
-            "install": "openclaw install openclaw/skills/WeAreAllSatoshiN/openclaw-mem || true"
+            "install": "clawhub install openclaw/skills/WeAreAllSatoshiN/openclaw-mem || true"
         }
     ]
 }
