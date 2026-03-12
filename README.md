@@ -68,9 +68,11 @@ docker run -e OPENCLAW_GATEWAY_TOKEN=your_token_here -p 18789:18789 zpk.idc.w7.c
 | 变量 | 必填 | 说明 |
 |------|------|------|
 | OPENCLAW_GATEWAY_TOKEN | 是 | Gateway 认证 Token |
-| OPENCODE_ZEN_API_KEY | 是 | OpenCode Zen API Key（从 opencode.ai/zen 获取） |
+| OPENCODE_ZEN_API_KEY | 是 | OpenCode Zen API Key（从 opencode.ai/zen 获取，需充值余额） |
 | PORT | 否 | Gateway 端口 (默认 18789) |
 | APP | 否 | 应用名称 (默认 openclaw) |
+
+> **注意**：OpenCode Zen 需要 API key（需充值余额）才能使用，默认模型为 `glm-5`，fallbacks 包含多个免费模型（可能有 rate limit 或时间限制）。
 
 ### 常用命令
 

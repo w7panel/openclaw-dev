@@ -31,9 +31,7 @@ if [ -f "$PREINSTALL_CONFIG" ]; then
     CONFIG_CONTENT=$(cat "$MERGED_CONFIG")
     for VAR in $(compgen -e); do
         VALUE="${!VAR}"
-        if [ -n "$VALUE" ]; then
-            CONFIG_CONTENT="${CONFIG_CONTENT//__${VAR}__/$VALUE}"
-        fi
+        CONFIG_CONTENT="${CONFIG_CONTENT//__${VAR}__/$VALUE}"
     done
     echo "$CONFIG_CONTENT" > "$USER_CONFIG"
 

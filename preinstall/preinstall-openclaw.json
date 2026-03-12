@@ -20,11 +20,14 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "opencode/big-pickle",
+        "primary": "opencode/glm-5",
         "fallbacks": [
+          "opencode/glm-4.7",
+          "opencode/big-pickle",
           "opencode/minimax-m2.5-free",
           "opencode/mimo-v2-flash-free",
-          "opencode/nemotron-3-super-free"
+          "opencode/nemotron-3-super-free",
+          "opencode/gpt-5-nano"
         ]
       }
     }
