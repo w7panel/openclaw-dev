@@ -139,7 +139,7 @@ openclaw-dev/
 {
   "name": "my-skill",
   "url": "N/A",
-  "install": "git clone https://github.com/xxx/my-skill.git ~/.openclaw/skills/my-skill"
+  "install": "mkdir -p /opt/preinstall/.openclaw/skills && git clone https://github.com/xxx/my-skill.git /opt/preinstall/.openclaw/skills/my-skill"
 }
 ```
 

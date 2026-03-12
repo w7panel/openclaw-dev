@@ -154,7 +154,7 @@
 {
   "name": "wechat-publisher",
   "url": "N/A",
-  "install": "mkdir -p ~/.openclaw/skills && git clone --depth 1 https://github.com/0731coderlee-sudo/wechat-publisher.git ~/.openclaw/skills/wechat-publisher || true"
+  "install": "mkdir -p /opt/preinstall/.openclaw/skills && git clone --depth 1 https://github.com/0731coderlee-sudo/wechat-publisher.git /opt/preinstall/.openclaw/skills/wechat-publisher || true"
 }
 ```
 
@@ -182,7 +182,13 @@
    - `preinstall/` 目录整个 COPY 到镜像的 `/opt/preinstall/`
    - 容器启动时由 entrypoint.sh 复制到 `/home/`
 
-6. **OpenClaw Skills 处理**
+6. **openclaw install 生成文件**
+   - openclaw 类型的 install 命令生成的文件（如克隆的 skills）
+   - **必须**安装到 `/opt/preinstall/.openclaw/` 目录下
+   - 这样构建时会被 COPY 到镜像的 `/opt/preinstall/`
+   - 示例：`/opt/preinstall/.openclaw/skills/my-skill`
+
+7. **OpenClaw Skills 处理**
    - OpenClaw Skills 位于 `~/.openclaw/skills` 或 `<workspace>/skills`
    - Skills 格式：AgentSkills 兼容，包含 `SKILL.md` + YAML frontmatter
    - 详细说明见 [OpenClaw Skills 文档](https://docs.openclaw.ai/skills)
