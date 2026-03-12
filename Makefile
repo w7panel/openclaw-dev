@@ -78,6 +78,21 @@ build: check-config prepare-dockefile
 	@echo "========================================"
 
 # =======================
+# 运行测试（使用 buildah）
+# =======================
+run: check-config
+	@echo "=== Run Container for Testing ==="
+	@echo "Image: $(IMAGE)"
+	@echo "Port: $(PORT)"
+	@echo ""
+	@echo "Press Ctrl+C to stop"
+	@(which buildah >/dev/null 2>&1 || (echo "Error: buildah not installed" && exit 1))
+	@buildah rm $(APP)-test 2>/dev/null || true
+	@buildah from --name $(APP)-test $(IMAGE)
+	@buildah config --cmd "/bin/bash" $(APP)-test
+	@buildah run -t $(APP)-test
+
+# =======================
 # 显示帮助
 # =======================
 help:
@@ -87,6 +102,7 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  build      Build Docker image using local buildah"
+	@echo "  run        Run container for testing"
 	@echo "  help       Show help"
 	@echo ""
 	@echo "Configuration files:"
