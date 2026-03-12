@@ -28,8 +28,8 @@
         {
             "name": "openclaw",
             "version": "latest",
-            "url": "https://openclaw.ai/install.sh",
-            "install": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 CI=true curl -fsSL $URL | bash -s -- --no-onboard"
+            "url": "N/A",
+            "install": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw"
         },
         {
             "name": "agent-browser",
