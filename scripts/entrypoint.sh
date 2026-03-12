@@ -8,6 +8,7 @@ mkdir -p /home/go ~/.openclaw
 cat > ~/.openclaw/openclaw.json << 'EOF'
 {
   "gateway": {
+    "mode": "local",
     "controlUi": {
       "dangerouslyAllowHostHeaderOriginFallback": true
     }
