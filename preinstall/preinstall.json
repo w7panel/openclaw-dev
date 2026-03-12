@@ -52,29 +52,9 @@
     ],
     "openclaw": [
         {
-            "name": "skill-active-maintenance",
-            "url": "N/A",
-            "install": "clawhub install active-maintenance || true"
-        },
-        {
             "name": "skill-agent-audit",
             "url": "N/A",
-            "install": "clawhub install agent-audit || true"
-        },
-        {
-            "name": "skill-skillguard-audit",
-            "url": "N/A",
-            "install": "clawhub install skillguard-audit || true"
-        },
-        {
-            "name": "skill-memory-lite",
-            "url": "N/A",
-            "install": "clawhub install memory-lite || true"
-        },
-        {
-            "name": "skill-openclaw-mem",
-            "url": "N/A",
-            "install": "clawhub install openclaw-mem || true"
+            "install": "mkdir -p ~/.openclaw/skills && git clone --depth 1 https://gh-proxy.com/https://github.com/sharbelayy/agent-audit.git ~/.openclaw/skills/agent-audit || true"
         }
     ]
 }
