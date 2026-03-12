@@ -44,17 +44,17 @@
             "install": "npm install -g pnpm"
         },
         {
-            "name": "clawhub",
+            "name": "wenyan-cli",
             "version": "latest",
-            "url": "https://www.npmjs.com/package/clawhub",
-            "install": "npm install -g clawhub"
+            "url": "https://www.npmjs.com/package/@wenyan-md/cli",
+            "install": "npm install -g @wenyan-md/cli"
         }
     ],
     "openclaw": [
         {
-            "name": "skill-agent-audit",
+            "name": "wechat-publisher",
             "url": "N/A",
-            "install": "mkdir -p ~/.openclaw/skills && git clone --depth 1 https://gh-proxy.com/https://github.com/sharbelayy/agent-audit.git ~/.openclaw/skills/agent-audit || true"
+            "install": "mkdir -p ~/.openclaw/skills && git clone --depth 1 https://github.com/0731coderlee-sudo/wechat-publisher.git ~/.openclaw/skills/wechat-publisher || true"
         }
     ]
 }
