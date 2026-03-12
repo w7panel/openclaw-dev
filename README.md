@@ -5,11 +5,7 @@ OpenClaw Dev Environment 是一个基于 Debian Bookworm 的容器化开发环�
 ## 快速开始
 
 ```bash
-make build    # 构建镜像
-make deploy   # 部署应用
-make exec     # 进入容器
-make logs     # 查看日志
-make clean    # 清理资源
+make build    # 构建镜像（使用本地 buildah）
 ```
 
 ## OpenClaw 使用说明
@@ -17,16 +13,13 @@ make clean    # 清理资源
 ### 首次启动
 
 ```bash
-# 1. 进入容器
-make exec
+# 1. 进入容器（需手动运行容器）
+docker run -it --rm -p 18789:18789 zpk.idc.w7.com/w7panel/openclaw-dev:latest /bin/bash
 
-# 2. 运行 onboarding 向导（推荐）
-openclaw onboard --install-daemon
-
-# 3. 启动 Gateway
+# 2. 在容器内启动 Gateway
 openclaw gateway --port 18789
 
-# 4. 打开 Control UI
+# 3. 打开 Control UI
 openclaw dashboard
 # 或访问 http://127.0.0.1:18789
 ```
@@ -52,14 +45,17 @@ openclaw dashboard
 
 详细配置说明见 [OpenClaw 官方文档](https://docs.openclaw.ai/)
 
-## 构建模式
+## 构建说明
 
-工具会自动检测构建方式：
+本项目使用本地 buildah 构建镜像：
 
-| 模式 | 条件 | 说明 |
-|------|------|------|
-| 本地构建 | 无 kubeconfig.yaml | 使用本地 buildah 命令 |
-| K8s 构建 | 有 kubeconfig.yaml | 使用 Buildah Job |
+```bash
+# 构建并推送镜像
+make build
+
+# 查看帮助
+make help
+```
 
 ## 配置文件
 
@@ -72,9 +68,9 @@ registry_pass: <密码>
 image: <完整镜像地址>
 ```
 
-### kubeconfig.yaml（可选）
+### config/registries.conf
 
-从 K8s 集群获取 kubeconfig 配置文件。存在时使用 K8s 构建，否则使用本地构建。
+Buildah 镜像源配置，支持国内镜像加速。
 
 ## 项目结构
 
@@ -86,13 +82,13 @@ openclaw-dev/
 ├── README.md            # 项目说明
 ├── config/              # 配置文件
 │   ├── Dockerfile.template  # Docker 镜像模板
-│   ├── registries.conf      # Buildah 镜像源配置
-│   ├── k8s-pod.yaml        # K8s Build Pod 模板
-│   └── k8s-deploy.yaml     # K8s Deploy 模板
+│   └── registries.conf      # Buildah 镜像源配置
 ├── preinstall/
-│   └── preinstall.json  # 预装清单
+│   ├── preinstall.json   # 预装清单
+│   └── .openclaw/        # OpenClaw 配置和 Skills
+│       └── skills/       # 预装的 Skills
 └── scripts/
-    └── entrypoint.sh   # 启动脚本
+    └── entrypoint.sh     # 启动脚本
 ```
 
 ## 预装配置
@@ -103,61 +99,26 @@ openclaw-dev/
 - **environment**：基础环境工具（Go、Node.js、kubectl 等）
 - **openclaw**：OpenClaw 生态项目（Skills）
 
-详见 AGENTS.md
+### 添加自定义 Skills
 
-## 部署应用
-
-### 直接使用预构建镜像
-
-可直接使用已构建的镜像部署：
+将 skills 文件夹复制到 `preinstall/.openclaw/skills/`，构建时会自动打包：
 
 ```bash
-# 部署默认镜像
-kubectl run openclaw --image=zpk.idc.w7.com/w7panel/openclaw-dev:latest \
-  --port=18789 --restart=Always --namespace=default
-
-# 或使用 Deployment
-kubectl create deployment openclaw --image=zpk.idc.w7.com/w7panel/openclaw-dev:latest \
-  --namespace=default
-
-# 暴露服务
-kubectl expose deployment openclaw --port=18789 --target-port=18789 \
-  --type=NodePort --namespace=default
+# 示例：添加自定义 skill
+cp -r /path/to/my-skill preinstall/.openclaw/skills/
 ```
 
-### 自定义构建后部署
-
-```bash
-# 1. 构建镜像
-make build
-
-# 2. 部署到 K8s
-make deploy
-
-# 3. 查看状态
-kubectl get pods,svc -n default -l app=openclaw
-
-# 4. 进入容器
-make exec
-```
-
-### 环境变量
+## 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | PORT | 18789 | Gateway 端口 |
-| NS | default | K8s 命名空间 |
+| APP | openclaw | 应用名称 |
 
-### 持久化存储
+## 持久化存储
 
-`/home` 目录为工作目录，建议挂载 PVC 进行持久化：
+`/home` 目录为工作目录，建议挂载 PVC 或宿主机目录进行持久化：
 
-```yaml
-volumeMounts:
-  - name: home
-    mountPath: /home
-volumes:
-  - name: home
-    persistentVolumeClaim:
-      claimName: openclaw-home
+```bash
+docker run -v /path/to/home:/home ...
 ```

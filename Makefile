@@ -1,6 +1,5 @@
-# OpenCode Dev Environment Makefile
+# OpenClaw Dev Environment Makefile
 
-NS ?= default
 APP ?= openclaw
 PORT ?= 18789
 
@@ -8,10 +7,7 @@ REGISTRY := $(shell grep '^registry:' config.yaml 2>/dev/null | awk '{print $$2}
 REGISTRY_USER := $(shell grep '^registry_user:' config.yaml 2>/dev/null | awk '{print $$2}')
 REGISTRY_PASS := $(shell grep '^registry_pass:' config.yaml 2>/dev/null | awk '{print $$2}')
 IMAGE := $(shell grep '^image:' config.yaml 2>/dev/null | awk '{print $$2}')
-KUBECONFIG_EXISTS := $(shell [ -f kubeconfig.yaml ] && echo "yes" || echo "no")
 REGISTRIES_CONF := config/registries.conf
-K8S_POD_CONFIG := config/k8s-pod.yaml
-K8S_DEPLOY_CONFIG := config/k8s-deploy.yaml
 DOCKERFILE_TEMPLATE := config/Dockerfile.template
 
 .PHONY: all
@@ -39,9 +35,7 @@ check-registries:
 		echo "Error: $(REGISTRIES_CONF) not found"; \
 		exit 1; \
 	fi
-	@# 复制配置到系统目录
 	@cp $(REGISTRIES_CONF) /etc/containers/registries.conf 2>/dev/null || true
-	@# 验证配置是否生效（检查是否有 docker.io 的镜像源重定向）
 	@if ! grep -q "registry.cdn.w7.cc\|daocloud\|nju.edu.cn" /etc/containers/registries.conf 2>/dev/null; then \
 		echo "Warning: No Chinese mirror configured"; \
 	fi
@@ -51,9 +45,13 @@ check-registries:
 # 复制 OpenClaw skills
 # =======================
 copy-skills:
-	@if [ -d ".opencode/skills" ]; then \
-		mkdir -p preinstall/.config/openclaw && \
-		cp -r .opencode/skills preinstall/.config/openclaw/ 2>/dev/null || true; \
+	@if [ -d "skills" ]; then \
+		mkdir -p preinstall/.openclaw && \
+		cp -r skills preinstall/.openclaw/ 2>/dev/null || true; \
+	fi
+	@if [ -d ".openclaw/skills" ]; then \
+		mkdir -p preinstall/.openclaw && \
+		cp -r .openclaw/skills preinstall/.openclaw/ 2>/dev/null || true; \
 	fi
 
 # =======================
@@ -64,9 +62,9 @@ prepare-dockefile: check-config check-preinstall check-registries copy-skills
 	@bash scripts/generate-dockefile.sh preinstall/preinstall.json $(DOCKERFILE_TEMPLATE) Dockerfile
 
 # =======================
-# 本地构建
+# 本地构建（使用 buildah）
 # =======================
-build-local: check-config prepare-dockefile
+build: check-config prepare-dockefile
 	@echo "=== Build Image (Local) ==="
 	@echo "Image: $(IMAGE)"
 	@(which buildah >/dev/null 2>&1 || (echo "Error: buildah not installed" && exit 1))
@@ -80,116 +78,17 @@ build-local: check-config prepare-dockefile
 	@echo "========================================"
 
 # =======================
-# K8s 构建
-# =======================
-build-k8s: check-config prepare-dockefile
-	@echo "=== Build Image (K8s) ==="
-	@echo "Image: $(IMAGE)"
-	@export KUBECONFIG=$$(pwd)/kubeconfig.yaml
-	@# 删除旧 Pod
-	@kubectl delete pod $(APP)-build -n $(NS) --ignore-not-found=true 2>/dev/null || true
-	@sleep 2
-	@# 应用 Pod 配置（替换变量）
-	@APP=$(APP) NS=$(NS) envsubst < $(K8S_POD_CONFIG) | kubectl apply -n $(NS) -f -
-	@echo "Waiting for pod..."
-	@kubectl wait --for=condition=Ready pod/$(APP)-build -n $(NS) --timeout=120s || { kubectl describe pod $(APP)-build -n $(NS); exit 1; }
-	@echo "Copying files..."
-	@kubectl cp Dockerfile $(APP)-build:/workspace/Dockerfile -n $(NS)
-	@kubectl cp preinstall $(APP)-build:/workspace/ -n $(NS)
-	@kubectl cp scripts $(APP)-build:/workspace/ -n $(NS)
-	@echo "Creating registries.conf..."
-	@kubectl exec $(APP)-build -n $(NS) -- mkdir -p /etc/containers
-	@kubectl cp $(REGISTRIES_CONF) $(APP)-build:/etc/containers/registries.conf -n $(NS)
-	@echo "Logging in to registry..."
-	@kubectl exec $(APP)-build -n $(NS) -- buildah login --username $(REGISTRY_USER) --password $(REGISTRY_PASS) $(REGISTRY)
-	@echo "Building..."
-	@kubectl exec $(APP)-build -n $(NS) -- buildah bud --squash --registries-conf /etc/containers/registries.conf --file /workspace/Dockerfile --tag $(IMAGE) --pull /workspace
-	@echo "Pushing..."
-	@kubectl exec $(APP)-build -n $(NS) -- buildah push $(IMAGE)
-	@echo ""
-	@echo "========================================"
-	@echo "Build and push successful!"
-	@echo "Image: $(IMAGE)"
-	@echo "========================================"
-
-# =======================
-# 构建镜像（自动选择模式）
-# =======================
-.PHONY: build
-build: check-config
-	@if [ "$(KUBECONFIG_EXISTS)" = "yes" ]; then \
-		$(MAKE) build-k8s; \
-	else \
-		$(MAKE) build-local; \
-	fi
-
-# =======================
-# 部署应用
-# =======================
-.PHONY: deploy
-deploy: check-config
-	@echo "=== Deploy $(APP) ==="
-	@echo "Image: $(IMAGE), Port: $(PORT)"
-	@# 创建 namespace
-	@kubectl create namespace $(NS) --dry-run=client -o yaml | kubectl apply -f - 2>/dev/null || true
-	@# 应用部署配置（替换变量）
-	@APP=$(APP) IMAGE=$(IMAGE) PORT=$(PORT) NS=$(NS) envsubst < $(K8S_DEPLOY_CONFIG) | kubectl apply -n $(NS) -f -
-	@kubectl rollout status deployment/$(APP) -n $(NS) --timeout=120s
-	@kubectl get pods,svc -n $(NS) -l app=$(APP)
-	@echo "Service: $(APP).$(NS):$(PORT)"
-
-# =======================
-# 查看日志
-# =======================
-.PHONY: logs
-logs:
-	@kubectl logs -n $(NS) -l app=$(APP) -f
-
-.PHONY: logs-build
-logs-build:
-	@kubectl logs -n $(NS) $(APP)-build -f
-
-# =======================
-# 进入容器
-# =======================
-.PHONY: exec
-exec:
-	@POD=$$(kubectl get pods -n $(NS) -l app=$(APP) -o jsonpath='{.items[0].metadata.name}'); \
-	if [ -z "$$POD" ]; then echo "No pod found"; exit 1; fi; \
-	kubectl exec -it -n $(NS) $$POD -- /bin/bash
-
-# =======================
-# 清理资源
-# =======================
-.PHONY: clean
-clean:
-	@echo "=== Clean Resources ==="
-	@kubectl delete deployment $(APP) -n $(NS) --ignore-not-found=true 2>/dev/null || true
-	@kubectl delete svc $(APP) -n $(NS) --ignore-not-found=true 2>/dev/null || true
-	@kubectl delete pod $(APP)-build -n $(NS) --ignore-not-found=true 2>/dev/null || true
-
-# =======================
 # 显示帮助
 # =======================
-.PHONY: help
 help:
 	@echo "OpenClaw Dev Environment - Makefile"
 	@echo ""
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  build        Build Docker image (local or K8s)"
-	@echo "  build-local  Build using local buildah"
-	@echo "  build-k8s    Build using K8s Pod"
-	@echo "  deploy       Deploy to K8s"
-	@echo "  logs         View logs"
-	@echo "  logs-build   View build logs"
-	@echo "  exec         Exec into pod"
-	@echo "  clean        Clean resources"
-	@echo "  help         Show help"
+	@echo "  build      Build Docker image using local buildah"
+	@echo "  help       Show help"
 	@echo ""
 	@echo "Configuration files:"
 	@echo "  config.yaml           - Registry and image config"
 	@echo "  config/registries.conf - Buildah mirror config"
-	@echo "  config/k8s-pod.yaml   - K8s Build Pod template"
-	@echo "  config/k8s-deploy.yaml - K8s Deploy template"

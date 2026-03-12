@@ -24,7 +24,6 @@
 - Dockerfile.template（Dockerfile 模板，现移至 config/ 目录）
 - Makefile（构建脚本）
 - config.yaml（配置文件）
-- kubeconfig.yaml（K8s 配置）
 - config/ 目录下所有配置文件
 
 未经同意，不得擅自修改上述文件。
@@ -123,16 +122,6 @@
 }
 ```
 
-**示例 - apt-get**：
-```json
-{
-  "name": "buildah",
-  "version": "1.37.3",
-  "url": "https://packages.debian.org/bookworm/buildah",
-  "install": "apt-get update && apt-get install -y buildah"
-}
-```
-
 ### openclaw 字段
 
 用于安装 OpenClaw 技能和扩展。**不支持 Dockerfile 原生指令，只能填写安装命令**，脚本会自动拼接 RUN 指令。
@@ -141,55 +130,23 @@
 |------|------|------|
 | name | 项目名称 | 是 |
 | url | Git 仓库地址 | 是 |
-| install_doc | 安装文档地址 | 否 |
 | install | 安装命令（使用 `$URL` 变量） | 是 |
 
 **使用场景**：
-- 安装 OpenClaw 技能（如 superpowers、oh-my-openclaw）
-- 安装 OpenClaw 相关扩展
+- 安装 OpenClaw Skills
+- 克隆 Git 仓库到预装目录
 
 **规范**：
 1. **禁止使用 RUN**：install 字段只能填写安装命令，禁止使用 RUN、COPY 等 Dockerfile 指令
 2. **脚本自动拼接**：Makefile 生成 Dockerfile 时会自动拼接 `RUN` 前缀
 3. **必须使用 `$URL` 变量**：install 命令中必须使用 `$URL` 表示 url 字段的值
-4. **优先使用 install_doc**：如果有安装文档，读取文档内容提取安装命令
 
-**示例**：
+**示例 - 克隆 skill 到预装目录**：
 ```json
 {
-  "name": "superpowers",
-  "url": "https://ghproxy.net/https://github.com/obra/superpowers",
-  "install_doc": "https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md",
-  "install": "git clone --depth 1 $URL /tmp/superpowers && mkdir -p /opt/preinstall/.config/openclaw && cp -r /tmp/superpowers /opt/preinstall/.config/openclaw/ && rm -rf /tmp/superpowers"
-}
-```
-
-### openclaw 字段（简写）
-
-用于安装 OpenClaw 技能和扩展。
-
-| 字段 | 说明 | 必填 |
-|------|------|------|
-| name | 项目名称 | 是 |
-| url | Git 仓库地址 | 是 |
-| install_doc | 安装文档地址 | 否 |
-| install | 安装命令（使用 `$URL` 变量） | 是 |
-
-**使用场景**：
-- 安装 OpenClaw 技能（如 superpowers、oh-my-openclaw）
-- 安装 OpenClaw 相关扩展
-
-**规范**：
-1. **必须使用 `$URL` 变量**：install 命令中必须使用 `$URL` 表示 url 字段的值
-2. **优先使用 install_doc**：如果有安装文档，读取文档内容提取安装命令
-
-**示例**：
-```json
-{
-  "name": "superpowers",
-  "url": "https://ghproxy.net/https://github.com/obra/superpowers",
-  "install_doc": "https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md",
-  "install": "RUN git clone --depth 1 $URL /tmp/superpowers && mkdir -p /opt/preinstall/.config/openclaw && cp -r /tmp/superpowers /opt/preinstall/.config/openclaw/ && rm -rf /tmp/superpowers"
+  "name": "wechat-publisher",
+  "url": "N/A",
+  "install": "mkdir -p ~/.openclaw/skills && git clone --depth 1 https://github.com/0731coderlee-sudo/wechat-publisher.git ~/.openclaw/skills/wechat-publisher || true"
 }
 ```
 
@@ -207,22 +164,17 @@
    - 如果缺少 install 字段，脚本会报错并提示根据规范补充
    - install 命令中使用 `$URL` 变量表示 url 字段的值
 
-3. **install_doc 处理**
-   - 读取 install_doc 地址内容
-   - 提取安装命令，整理后填入 install 字段
-   - install_doc 地址也需验证可用性
-
-4. **install 命令写入**
+3. **install 命令写入**
    - 所有 install 命令统一写入 Dockerfile
 
-5. **软链接处理**
+4. **软链接处理**
    - 软链接在 install 命令中创建（使用相对路径，禁止使用绝对路径）
 
-6. **本地文件处理**
+5. **本地文件处理**
    - `preinstall/` 目录整个 COPY 到镜像的 `/opt/preinstall/`
    - 容器启动时由 entrypoint.sh 复制到 `/home/`
 
-7. **OpenClaw Skills 处理**
+6. **OpenClaw Skills 处理**
    - OpenClaw Skills 位于 `~/.openclaw/skills` 或 `<workspace>/skills`
    - Skills 格式：AgentSkills 兼容，包含 `SKILL.md` + YAML frontmatter
    - 详细说明见 [OpenClaw Skills 文档](https://docs.openclaw.ai/skills)
@@ -260,9 +212,6 @@ metadata:
 ### 安装 Skills
 
 ```bash
-# 使用 ClawHub 安装
-clawhub install <skill-slug>
-
 # 手动安装
 git clone <skill-repo> ~/.openclaw/skills/<skill-name>
 ```
@@ -270,7 +219,6 @@ git clone <skill-repo> ~/.openclaw/skills/<skill-name>
 详细文档：[OpenClaw Skills](https://docs.openclaw.ai/skills)
 
 ## 中国镜像源
-
 
 由于 Docker Hub 和 GCR 在国内无法访问，构建时必须使用镜像源：
 
@@ -332,7 +280,7 @@ https://gh-proxy.com/https://github.com/cli/cli/releases/download/v2.63.2/gh_2.6
 ### 注意事项
 
 1. **代理服务不稳定**：代理服务可能随时失效，使用前建议验证可用性
-2. **K8s 环境差异**：某些代理在本地可用但在 K8s Pod 内不可用（如 ghproxy.net）
+2. **构建环境差异**：某些代理在本地可用但在 K8s Pod 内不可用
 3. **优先使用官方源**：如网络条件允许，优先使用 GitHub 原始地址
 4. **构建检查跳过**：Makefile 会跳过 ghproxy.net 等已知代理的 URL 检查
 
@@ -341,21 +289,9 @@ https://gh-proxy.com/https://github.com/cli/cli/releases/download/v2.63.2/gh_2.6
 ### 完整示例
 
 ```bash
-# 1. 构建
-./Makefile build
-
-# 2. 部署
-./Makefile deploy
-
-# 3. 测试
-./Makefile logs app
-./Makefile exec
-
-# 4. 清理（重要！）
-./Makefile clean
+# 1. 构建镜像
+make build
 ```
-
-> **注意**：每次测试完成后必须执行 `clean` 清理资源，避免占用集群资源。
 
 ### 配置文件
 
@@ -368,10 +304,6 @@ registry_pass: <密码>
 image: <完整镜像地址>
 ```
 
-#### kubeconfig.yaml（可选）
-
-K8s 集群配置文件。存在时使用 K8s 构建，否则使用本地构建。
-
 ### 生产环境处理
 
 1. **镜像构建时**：install 命令执行，安装内容写入 `/opt/preinstall/`
@@ -380,14 +312,13 @@ K8s 集群配置文件。存在时使用 K8s 构建，否则使用本地构建�
 
 ```
 /opt/preinstall/    # 镜像内，原始预装内容
-/home/             # PVC 挂载，持久化目录
+/home/             # 持久化目录
 ```
 
 ### 注意事项
 
-- 工具安装在 `/opt/tools`（避免 PVC 挂载覆盖）
-- `/home` 目录会被 PVC 挂载覆盖
-- 持久化目录需在启动脚本创建: `/home/go`
+- 工具安装在 `/opt/tools`（避免覆盖）
+- `/home` 目录为工作目录，建议挂载宿主机目录进行持久化
 - Go mod 缓存: `$GOPATH=/home/go`
 
 ### 项目文件规则
@@ -395,7 +326,6 @@ K8s 集群配置文件。存在时使用 K8s 构建，否则使用本地构建�
 以下文件不需要提交到 git（已在 `.gitignore` 中配置）：
 
 - `config.yaml` - 用户配置文件
-- `kubeconfig.yaml` - K8s 配置文件
 - `gitconfig.yaml` - Git 认证配置（用户名、Token、代理）
 - `Dockerfile` - 构建产物
 
