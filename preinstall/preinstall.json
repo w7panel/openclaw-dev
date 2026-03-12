@@ -55,6 +55,11 @@
             "name": "wechat-publisher",
             "url": "N/A",
             "install": "mkdir -p /opt/preinstall/.openclaw/skills && git clone --depth 1 https://github.com/0731coderlee-sudo/wechat-publisher.git /opt/preinstall/.openclaw/skills/wechat-publisher || true"
+        },
+        {
+            "name": "openclaw-china",
+            "url": "N/A",
+            "install": "mkdir -p /opt/preinstall/.openclaw/skills && git clone --depth 1 https://github.com/BytePioneer-AI/openclaw-china.git /opt/preinstall/.openclaw/skills/openclaw-china || true"
         }
     ]
 }

@@ -16,24 +16,16 @@ if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
     exit 1
 fi
 
-cat > ~/.openclaw/openclaw.json << EOF
-{
-  "gateway": {
-    "mode": "local",
-    "controlUi": {
-      "dangerouslyAllowHostHeaderOriginFallback": true,
-      "allowInsecureAuth": true,
-      "dangerouslyDisableDeviceAuth": true
-    },
-    "auth": {
-      "mode": "token",
-      "token": "$OPENCLAW_GATEWAY_TOKEN"
-    }
-  },
-  "tools": {
-    "profile": "full"
-  }
-}
-EOF
+PREINSTALL_CONFIG="/opt/preinstall/preinstall-openclaw.json"
+USER_CONFIG="$HOME/.openclaw/openclaw.json"
+
+if [ -f "$PREINSTALL_CONFIG" ]; then
+    if [ -f "$USER_CONFIG" ]; then
+        jq -s ".[1] * .[0]" "$PREINSTALL_CONFIG" "$USER_CONFIG" > /tmp/merged.json
+        mv /tmp/merged.json "$USER_CONFIG"
+    else
+        cp "$PREINSTALL_CONFIG" "$USER_CONFIG"
+    fi
+fi
 
 exec openclaw gateway --port 18789 --bind lan

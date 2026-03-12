@@ -1,0 +1,29 @@
+{
+  "gateway": {
+    "mode": "local",
+    "controlUi": {
+      "dangerouslyAllowHostHeaderOriginFallback": true,
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
+    },
+    "auth": {
+      "mode": "token",
+      "token": "env:OPENCLAW_GATEWAY_TOKEN"
+    }
+  },
+  "tools": {
+    "profile": "full"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "opencode/big-pickle",
+        "fallbacks": [
+          "opencode/minimax-m2.5-free",
+          "opencode/mimo-v2-flash-free",
+          "opencode/nemotron-3-super-free"
+        ]
+      }
+    }
+  }
+}
