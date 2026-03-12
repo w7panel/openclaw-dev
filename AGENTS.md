@@ -193,6 +193,36 @@
    - Skills 格式：AgentSkills 兼容，包含 `SKILL.md` + YAML frontmatter
    - 详细说明见 [OpenClaw Skills 文档](https://docs.openclaw.ai/skills)
 
+8. **OpenClaw 插件预装规范**
+   - 插件文件安装到 `/opt/preinstall/.openclaw/extensions/<plugin-id>/`
+   - 插件预装只需要安装文件，不强制启用插件
+   - 用户自行决定是否启用：运行 `openclaw plugins enable <plugin-id>`
+   - 示例 - openclaw-china 插件：
+   ```json
+   {
+     "name": "openclaw-china",
+     "url": "N/A",
+     "install": "mkdir -p /opt/preinstall/.openclaw/extensions && git clone --depth 1 https://github.com/BytePioneer-AI/openclaw-china.git /tmp/openclaw-china && cd /tmp/openclaw-china && pnpm install --silent && pnpm build --silent && cp -r ./packages/channels /opt/preinstall/.openclaw/extensions/openclaw-china || true"
+   }
+   ```
+
+9. **OpenClaw 预装配置文件**
+   - 配置文件放在 `preinstall/preinstall-openclaw.json`
+   - 配置内容：gateway、tools、agents、env 等
+   - 环境变量使用 `env:VAR_NAME` 格式引用
+   - 不强制启用插件，由用户决定
+   - 示例：
+   ```json
+   {
+     "env": {
+       "OPENCODE_ZEN_API_KEY": "env:OPENCODE_ZEN_API_KEY"
+     },
+     "gateway": { ... },
+     "tools": { ... },
+     "agents": { ... }
+   }
+   ```
+
 ## OpenClaw Skills 说明
 
 OpenClaw 使用 AgentSkills 兼容的 skill 文件夹来扩展 agent 能力。

@@ -59,7 +59,7 @@
         {
             "name": "openclaw-china",
             "url": "N/A",
-            "install": "mkdir -p /opt/preinstall/.openclaw/skills && git clone --depth 1 https://github.com/BytePioneer-AI/openclaw-china.git /opt/preinstall/.openclaw/skills/openclaw-china || true"
+            "install": "mkdir -p /opt/preinstall/.openclaw/extensions && git clone --depth 1 https://github.com/BytePioneer-AI/openclaw-china.git /tmp/openclaw-china && cd /tmp/openclaw-china && pnpm install && pnpm build && cp -r ./packages/channels /opt/preinstall/.openclaw/extensions/openclaw-china || true"
         }
     ]
 }

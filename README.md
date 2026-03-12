@@ -63,6 +63,15 @@ docker run -e OPENCLAW_GATEWAY_TOKEN=your_token_here -p 18789:18789 zpk.idc.w7.c
 
 > **注意**：必须设置 `OPENCLAW_GATEWAY_TOKEN` 环境变量，未设置时容器会报错退出。
 
+### 环境变量
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| OPENCLAW_GATEWAY_TOKEN | 是 | Gateway 认证 Token |
+| OPENCODE_ZEN_API_KEY | 是 | OpenCode Zen API Key（从 opencode.ai/zen 获取） |
+| PORT | 否 | Gateway 端口 (默认 18789) |
+| APP | 否 | 应用名称 (默认 openclaw) |
+
 ### 常用命令
 
 | 命令 | 说明 |

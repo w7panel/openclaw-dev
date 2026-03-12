@@ -1,4 +1,7 @@
 {
+  "env": {
+    "OPENCODE_ZEN_API_KEY": "env:OPENCODE_ZEN_API_KEY"
+  },
   "gateway": {
     "mode": "local",
     "controlUi": {
