@@ -1,6 +1,6 @@
 {
   "env": {
-    "OPENCODE_ZEN_API_KEY": "env:OPENCODE_ZEN_API_KEY"
+    "OPENCODE_ZEN_API_KEY": "__OPENCODE_ZEN_API_KEY__"
   },
   "gateway": {
     "mode": "local",
@@ -11,7 +11,7 @@
     },
     "auth": {
       "mode": "token",
-      "token": "env:OPENCLAW_GATEWAY_TOKEN"
+      "token": "__OPENCLAW_GATEWAY_TOKEN__"
     }
   },
   "tools": {

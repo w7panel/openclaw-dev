@@ -21,11 +21,23 @@ USER_CONFIG="$HOME/.openclaw/openclaw.json"
 
 if [ -f "$PREINSTALL_CONFIG" ]; then
     if [ -f "$USER_CONFIG" ]; then
-        jq -s ".[1] * .[0]" "$PREINSTALL_CONFIG" "$USER_CONFIG" > /tmp/merged.json
-        mv /tmp/merged.json "$USER_CONFIG"
+        TMP_CONFIG=$(mktemp)
+        jq -s ".[1] * .[0]" "$PREINSTALL_CONFIG" "$USER_CONFIG" > "$TMP_CONFIG"
+        MERGED_CONFIG="$TMP_CONFIG"
     else
-        cp "$PREINSTALL_CONFIG" "$USER_CONFIG"
+        MERGED_CONFIG="$PREINSTALL_CONFIG"
     fi
+
+    CONFIG_CONTENT=$(cat "$MERGED_CONFIG")
+    for VAR in $(compgen -e); do
+        VALUE="${!VAR}"
+        if [ -n "$VALUE" ]; then
+            CONFIG_CONTENT="${CONFIG_CONTENT//__${VAR}__/$VALUE}"
+        fi
+    done
+    echo "$CONFIG_CONTENT" > "$USER_CONFIG"
+
+    [ -f "$TMP_CONFIG" ] && rm -f "$TMP_CONFIG"
 fi
 
 exec openclaw gateway --port 18789 --bind lan
